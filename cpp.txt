@@ -1,0 +1,400 @@
+single : used for constructors
+Account::Account(): balance(0){}
+
+vector<string> Account::Report()
+{
+	vector<string> report;
+
+	report.push_back....
+}
+
+bool Account::Deposit(int amount)
+{
+	log.push_back(Transaction(amount, "Deposit"))
+}
+
+// Declare objects
+Account acct;
+Transaction t(amount, type); 
+Transaction t{amount, type};
+
+- try not to use = when initalizing
+
+
+- Encapsulation is more for surviving change than security
+
+- make -f changesonly
+
+- casting:
+	- i = static_cast<int>(d);
+	- Make your intent obvious; write EXPRESSIVE code
+
+	- const:
+		- void display(Transaction& const t);
+
+- Don't use "using namespace std", especially in a header file. Better to use "using std::string;"
+
+- scoped enums (enum class) >> enums
+
+- If you have a compiler error, look in your header file.
+
+- If you have a linker error, look in your .cpp file.
+
+- && || ! are BOOLEAN operators; all operands are converted to Bool.
+
+- operator overload syntax:
+	- MyObject < Something:
+		- bool MyClass::operator<(OtherType something)
+	- Something < MyObject:
+		- bool operator<(OtherType something, MyClass mc)
+
+- templates:
+	- resolved at compile time instead of runtime; speeds runtime up a lot
+		- no runtime hit
+	- much of standard library is template-based
+	- eg:
+	template <class T>
+	T max(T const& t1, T const& t2)
+	{
+		return t1 < t2? t2 : t1;
+	}
+	// Note: if u didn't use const&, u wouldn't be able to pass in literals like zero.
+	- compiler may deduce the type you're using:
+		- max(33, 44)
+		- max(x, 0)
+		- max<double>(33, 2.0)
+			//will return double since you specified.
+	- template specialization is very helpful
+
+- references:
+	- an alias; another word for the same thing
+	- cannot rebind it
+	- 
+	int a = 3;
+	int& rA = a;
+
+- pointers:
+	- have type-safety
+	- can point nowhere:
+		- null pointer
+		- "nullptr" keyword
+	- can be rebound
+	- eg:
+	int* pA = &A;
+	int *pA = &A;
+	
+	- *pA = 5; // To get through the pointer to its target
+	- eg:
+	Person Kate("Kate", "Gregory", 234);
+	Person* pKate = &Kate;
+	name = (*pKate).GetName();
+	name = pKate->GetName();
+	
+	- pointer to a const vs const pointer:
+		- int const* pcI = pI;
+		- int* const cpI = pI;
+	
+- const & indirection:
+	- way to tell the compiler that you won't change anything
+	- "const correctness from the beginning":
+		- When you write functions and variables, decide then and there whether to use const.
+		- member functions should be const unless needed.
+		- try to take all refparms by const reference.
+	- const: before or after? use after:
+		- int const c = 3;
+	- 
+
+- memory management:
+	- smart pointers mean you don't have to do memory management yourself
+	- local variables are on the stack i.e local storage
+	- free store is basically the 'heap' which is C jargon
+	- The Free Store or Stack:
+		- for longer-lived variables
+		- how to get memory from here:
+			- use new operator
+			- memory will be allocated and you'll get a pointer in return
+			- constructor will be run to initialize the objects
+			- call delete on the object which will free and destruct
+		- Manual memory management sux ballz
+		
+	- Rule of Three:
+		- if you have a pointer, keep that pointer in an object
+		- therefore, the destructor will call delete on the ptr once outta scope
+		- when someone makes a copy of the object, write a copy constructor for obj a = b;
+		- make a copy assignment operator for a = b;
+	
+	- Rule of Five:
+		- fuck this
+	
+	- Rule of Zero:
+		- best rule
+		- design your class so you don't need any of these
+		- use stack or value semantics
+	
+	- Easy Memory Management:
+		- Handle copy and move:
+			- Prevent it (private or deleted copy constructor and copy assignment operator)
+			- Deep copy
+			- Shallow copy with reference count
+		- C++11 has smart pointers that prevent copying and also offer shallow copying:
+			- unique_ptr
+				- noncopyable (use std::move)
+				- low-overhead
+			- shared_ptr
+				- copyable
+				- reference counted
+			- weak_ptr
+				- lets you peek at a shared_ptr without bumping the reference count
+
+		- make_shared is the best way to make unique_ptr's
+		- shared_ptr has its own destructor for clean up
+
+- Inheritance and Indirection:
+	- Given a base class reference:
+		- if function is virtual, derived class function executes (polymorphism)
+			- performance-hit
+		- if nonvirtual, base class function executes
+		- compiler can't see derived-class functions unless you override
+	- A "pointer to a base class" may point actually to a derived class instance:
+		- any base class function can be called thru the pointer and the virtual/non-virtual rules apply as well.
+	
+	- Same rules apply to smart pointers.
+
+- Slicing:
+	- happens if you copy objects:
+		- eg: copying a derived object into a base object, dropping derived members
+	- happens when passing to a function by value since a copy is made
+	- therefore, references or pointers to avoid slicing
+	
+- Casting and Indirection:
+	- very expressive.
+	- static_cast<type>:
+		- happens at compile time
+		- up to you to be sure it's safe
+	- dynamic_cast<type>:
+		- does a runtime check
+		- relies on a virtual table i.e works only when casting a pointer to a class with a virtual table
+		- returns null if cast fails
+		- slower but safer
+	- other cast operators:
+		- const_cast (not modern)
+		- reinterpret_cast (not a beginner technique; for bit twiddling)
+	- "do i have this Person* really pointing to a Tweeter?"
+		- you can test this by dynamic_cast'ing to a Tweeter* and accessing Tweeter members
+		- if it succeeds then great!
+		- you have that ability in runtime.
+
+
+Automatic Return Type Deduction:
+	- auto keyword
+	auto AreaOfSquare(double side) {
+		return side*side;
+	} // better to be explicit with type in a simple case such as this
+	
+	- complex case:
+		auto ComplexFunctionTemplate(...) {
+			// Complex template code...
+			return result;
+		} // In this case being type-explicit will be very cumbersome coz of templates
+	
+		auto BuildCoolMap() {
+			std::map<std::string, SomeLongValueType> result;
+			// Fill the result map object...
+			return  result;
+		} // Only need to specify the return type once in this case: during declaration of result.
+	- Trade off between looking inside the func impl vs not having repeated type information
+
+
+Misc Improvements to C++11 in 14 & 17:
+	- Relaxed constexpr functions:
+		- two time periods: 
+			- run time: when CPU is executing the program
+			- compile time: translation process of .cpp source code to executable binary file
+				- syntax checks happen
+			- some computations can be done in compile time to gain runtime performance:
+				- result already available in exec binary file
+				- ordinary functions are executed in run time
+				- constexpr functions are executed at compile-time
+					constexpr doulbe DoSomething() {
+						...
+					}
+				- 11 had several restrictions on these constexpr functions like not having if or for statements
+				- In 14, you can. In fact, you can declare local variables and if, switch, for while etc.
+				- use static_assert to verify constexpr results
+			
+	- variable templates:
+		template <typename T>
+		constexpr T pi = T(3.14159);
+		
+		- pi<float> vs pi<double>
+		- you can specialize variable templates too
+		
+		template <typename T>
+		constexpr T maxValue = T(1000);
+
+		template <>
+		constexpr double maxValue<double> = 2000;
+
+		template <>
+		constexpr char maxValue<char> = 'Z';
+
+		int main() {
+			cout << " maxValue<int>    :" << maxValue<int> << endl;
+			cout << " maxValue<double> :" << maxValue<double> << endl;
+			cout << " maxValue<char>   :" << maxValue<char> << endl;
+		}
+
+	
+	- [[deprecated]] attributes:
+		- sends warnings when code uses deprecated functions
+		[[deprecated("DoSomething is inefficient. Use DoSomething2 instead."]]
+		void DoSomething() {
+			...
+		} // compiler warning
+
+
+Standard Library Improvements:
+	- stack memory is like a scratch pad:
+		- very fast allocations; just increasing a pointer
+		- but limited amount of space
+	- heap memory:
+		- can serve much larger chunks of memory
+		- slower allocations:
+			- making a request to the OS memory manager
+		- use "new" keyword:
+		double* p = new double[1000000]; // also called dynamic allocation
+		- memory lifecyle:
+			- allocate with new[]
+			- use
+			- allocated memory must be released
+				delete [] p;
+				p = nullptr; // Avoid dangling references
+				
+	- make_unique and smart pointers:
+		- unique_ptr:
+			- no need to explicitly release memory; release as soon as scope is left.
+			- how to make one:
+				#include <memory>
+				auto p = std::make_unique<double[]>(1000000);
+			- you should have no explicit calls to new and delete
+	
+	- Standard-defined literals:
+		- time intervals with proper units:
+			sleep(20); // what are the units??? satellite got fucked coz of this
+		- use:
+			sleep(20ms);
+		- standard chrono library:
+			#include<chrono>
+			- namespace std::chrono
+			- time duration classes:
+				- hour, minutes, .. , nanoseconds
+				- can do conversions:
+					seconds s{}; // 0-initialized
+					seconds s; // No initialization just like int
+					seconds s{10}; // 10 seconds
+					seconds s = 10; // Will not compile
+					auto s = 10s; // 10 seconds (C++14!); auto deduces chrono::seconds
+		- standard defined literals:
+			-   h : hours
+			- min : minutes
+			-   s : seconds
+			-  ms : milliseconds
+			-  us : microseconds
+			-  ns : nanoseconds
+		
+		- deducing strings:
+			auto s = "Connie"; // deduced as const char*
+			auto s = "Connie"s; // use s-suffix and will be deduced as std::string
+			auto y = 10s; // deduced as std::chrono::seconds
+			
+		- chrono's automatic conversions happen at compile-time
+		
+	- Fetching items from tuples by types
+		- std::tuple intro'd in c++11:
+			- fixed collection of heterogeneous values
+			- #include <tuple>
+			- tuple is a generalization of std::pair
+		- fetching:
+			- std::get<2>(student); // fetch by index
+			- std::get<double>(student); // fetch by type
+				- compiler error if more than one element of the same type
+
+
+Better Lambdas:
+	- Quick intro/refresher on lambdas
+		- Unnamed function
+		[](int a, double b) {
+			// Do something ...
+		}
+		
+		vector<string> names{
+			"Mike", .. "Connie"
+		};
+		
+		sort(begin(names), end(names)); // designed in an extensible way with a custom rule
+		// Can bascically pass in a function to define the rule
+		
+		bool compare(string const& a, string const& b) {
+			a.length() < b.length();
+		}
+		
+		sort(begin(names), end(names), compare); // conventional since C++98
+		
+		sort(begin(names), end(names),
+			[](string const& a, string const& b)
+			{
+				return a.length() < b.length();
+			}
+		}; // with lambda function
+	
+	- Generic or Polymorphic lambdas:
+		- What if: vector<unique_ptr<MyCoolClass>>
+		- Just use: auto!!
+		
+		sort(begin(names), end(names),
+			[](auto const& a, auto const& b)
+			{
+				return a.length() < b.length();
+			}
+		};
+		
+	- Init-capture:
+		- This lambda captures nothing:
+		[](auto const& a, auto const& b)
+		{
+				return a.length() < b.length();
+		}
+
+		- Variables declated outside the lambda are imported inside it
+		int x{...};
+		double y{...};		
+		[x, y](auto a, auto b) // x and y passed by value
+		{
+			// Do something
+		}
+		
+		
+	
+
+- BEST PRACTICE to: 
+	- use const& when passing by reference because from the calling scope, you cannot be sure that reference you're passing will be unaltered.
+	
+	- mark member functions as const unless you know they're gonna change a member variable. This is very useful for compiler optimization and human reading.
+	
+	- Use friend keyword only when you NEED to.
+	
+	- Use references first, then consider pointers.
+	
+	- Functions that take literal values need to be aware of const
+	
+	- if you take a reference for speed, you should take a const reference
+	
+	- NOT USE new OR delete. Just use smart pointers.
+	
+	- not use protected variables; will be headache tracking what changed your base class members. Much better to completely encapsulate base class.
+	
+	- as soon as you have ONE virtual function, make sure your destructor is virtual
+	
+	- use pointers and refs help you avoid slicing.
+	
+	
